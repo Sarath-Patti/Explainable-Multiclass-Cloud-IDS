@@ -19,7 +19,7 @@ Explainable-Multiclass-Cloud-IDS/
 ├── data/
 │   ├── raw/           # Original, unmodified datasets
 │   ├── merged/        # Datasets combined from multiple sources
-│   └── processed/     # Cleaned and engineered features ready for ML
+│   └── processed/     # Cleaned datasets and train/validation/test splits
 ├── src/
 │   ├── data/          # Modules for ingestion, cleaning, and preprocessing
 │   ├── analysis/      # Exploratory data analysis (EDA) utilities
@@ -27,6 +27,7 @@ Explainable-Multiclass-Cloud-IDS/
 │   ├── explainability/# Explainable AI (SHAP) implementation scripts
 │   ├── visualization/ # Plotting and data visualization functions
 │   └── utils/         # Helper functions and shared utilities
+├── models/            # Serialized models and preprocessing artifacts
 ├── app/               # Flask application and REST API endpoints
 ├── tests/             # Unit and integration test suites
 ├── notebooks/         # Jupyter notebooks for experimentation and prototyping
@@ -58,7 +59,7 @@ pip install -r requirements.txt
 ```
 
 ## Usage Instructions
-Run the modules in sequence to ingest, profile, clean, and analyze the dataset:
+Run the modules in sequence to ingest, profile, clean, analyze, and preprocess the dataset:
 
 ```bash
 # 1. Merge and standardize raw dataset files
@@ -72,7 +73,25 @@ python3 src/data/data_cleaner.py
 
 # 4. Perform Exploratory Data Analysis (EDA)
 python3 src/analysis/eda.py
+
+# 5. Preprocess and prepare data splits for training
+python3 src/data/preprocessor.py
 ```
+
+## Feature Engineering & Preprocessing Pipeline
+The preprocessing pipeline separates the predictor features from target classes, encodes the target labels, splits the dataset, and serializes all artifacts.
+
+### Key Preprocessing Design Decisions
+
+#### 1. Omission of Feature Scaling
+Feature scaling (such as MinMaxScaler, StandardScaler, RobustScaler, or PowerTransformer) is intentionally omitted from the preprocessing pipeline:
+- **Tree-Based Model Invariance**: The models targeted for this system (Random Forest and XGBoost) are invariant to monotonic transformations of the features. Scaling features yields no performance benefits for these algorithms.
+- **Explainability (SHAP) & Interpretability**: Scaling distorts the natural values of network features (e.g., bytes, packets, durations). Keeping features in their raw physical units ensures that SHAP force plots, summary plots, and decision trees remain highly readable and actionable for security analysts.
+
+#### 2. Class Weighting vs. Resampling
+Resampling methods (such as SMOTE, oversampling, or undersampling) are deferred in favor of class-weighted learning:
+- **Data Integrity Preservation**: Undersampling discards valuable normal and attack samples, while oversampling generates synthetic samples that may introduce non-existent patterns or inflate false positive rates in real-world network traffic.
+- **Cost-Sensitive Class-Weighted Learning**: By computing balanced class weights exclusively from the training partition and passing them directly to the model's loss function, we preserve all original data structures while ensuring that minority attack classes (e.g., Web Attacks, Botnet traffic) receive appropriate penalty weights during training.
 
 ## Roadmap
 - [x] **v0.1**: Project Foundation (Directory layout, initial configurations, skeleton scripts)
@@ -80,9 +99,11 @@ python3 src/analysis/eda.py
 - [x] **v0.25**: Dataset Profiling & Validation (`data_profiler.py`)
 - [x] **v0.3**: Data Cleaning Pipeline (`data_cleaner.py`)
 - [x] **v0.35**: Exploratory Data Analysis (EDA) (`eda.py`)
-- [ ] **v0.4**: Model Training & Multiclass Classification (XGBoost, Scikit-learn)
-- [ ] **v0.5**: Explainable AI Integration (SHAP explanations and visualizations)
-- [ ] **v0.6**: Flask API & Web Dashboard Interface
-- [ ] **v0.7**: Report Generation (PDF reports using ReportLab) & Model Monitoring
+- [x] **v0.4**: Feature Engineering & Preprocessing (`preprocessor.py`)
+- [ ] **v0.5**: Model Training & Multiclass Classification (XGBoost, Scikit-learn)
+- [ ] **v0.6**: Explainable AI Integration (SHAP explanations and visualizations)
+- [ ] **v0.7**: Flask API & Web Dashboard Interface
+- [ ] **v0.8**: Report Generation (PDF reports using ReportLab) & Model Monitoring
 - [ ] **v1.0**: Production Release, Optimization, & Comprehensive Testing
+
 
