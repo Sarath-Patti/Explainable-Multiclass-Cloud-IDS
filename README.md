@@ -15,6 +15,7 @@ The repository is organized as follows:
 
 ```
 Explainable-Multiclass-Cloud-IDS/
+├── configs/           # Configuration files
 ├── data/
 │   ├── raw/           # Original, unmodified datasets
 │   ├── merged/        # Datasets combined from multiple sources
@@ -32,7 +33,8 @@ Explainable-Multiclass-Cloud-IDS/
 ├── outputs/
 │   ├── plots/         # Generated figures and charts
 │   ├── reports/       # Generated PDF/HTML reports
-│   └── metrics/       # Model evaluation logs and performance metrics
+│   ├── metrics/       # Model evaluation logs and performance metrics
+│   └── logs/          # Module execution log files
 ├── requirements.txt   # Package dependencies
 ├── .gitignore         # Version control exclusion file
 ├── README.md          # Project documentation
@@ -55,11 +57,32 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Usage Instructions
+Run the modules in sequence to ingest, profile, clean, and analyze the dataset:
+
+```bash
+# 1. Merge and standardize raw dataset files
+python3 src/data/data_merger.py
+
+# 2. Profile and validate the merged dataset
+python3 src/data/data_profiler.py
+
+# 3. Clean the dataset (remove rare classes, duplicates, missing/infinities, and constant features)
+python3 src/data/data_cleaner.py
+
+# 4. Perform Exploratory Data Analysis (EDA)
+python3 src/analysis/eda.py
+```
+
 ## Roadmap
-- **v0.1**: Project Foundation (Directory layout, initial configurations, skeleton scripts)
-- **v0.2**: Exploratory Data Analysis & Preprocessing Pipeline
-- **v0.3**: Model Training & Multiclass Classification (XGBoost, Scikit-learn)
-- **v0.4**: Explainable AI Integration (SHAP explanations and visualizations)
-- **v0.5**: Flask API & Web Dashboard Interface
-- **v0.6**: Report Generation (PDF reports using ReportLab) & Model Monitoring
-- **v1.0**: Production Release, Optimization, & Comprehensive Testing
+- [x] **v0.1**: Project Foundation (Directory layout, initial configurations, skeleton scripts)
+- [x] **v0.2**: Dataset Ingestion & Standardization (`data_merger.py`)
+- [x] **v0.25**: Dataset Profiling & Validation (`data_profiler.py`)
+- [x] **v0.3**: Data Cleaning Pipeline (`data_cleaner.py`)
+- [x] **v0.35**: Exploratory Data Analysis (EDA) (`eda.py`)
+- [ ] **v0.4**: Model Training & Multiclass Classification (XGBoost, Scikit-learn)
+- [ ] **v0.5**: Explainable AI Integration (SHAP explanations and visualizations)
+- [ ] **v0.6**: Flask API & Web Dashboard Interface
+- [ ] **v0.7**: Report Generation (PDF reports using ReportLab) & Model Monitoring
+- [ ] **v1.0**: Production Release, Optimization, & Comprehensive Testing
+
