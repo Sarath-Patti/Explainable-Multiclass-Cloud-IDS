@@ -79,6 +79,9 @@ python3 src/data/preprocessor.py
 
 # 6. Train and evaluate Random Forest baseline model
 python3 src/models/random_forest.py
+
+# 7. Train and evaluate XGBoost baseline model
+python3 src/models/xgboost_model.py
 ```
 
 ## Feature Engineering & Preprocessing Pipeline
@@ -117,6 +120,27 @@ The Random Forest baseline pipeline trains a robust tree ensemble on the preproc
   - `outputs/plots/rf_roc_curves.png` (One-vs-Rest ROC curves per class)
   - `outputs/plots/rf_precision_recall.png` (Precision-Recall curves per class)
 
+## XGBoost Baseline Model Pipeline (v0.6)
+The XGBoost baseline pipeline trains a histogram-based Gradient Boosted Decision Tree (GBDT) ensemble mirroring the Random Forest setup for direct benchmark comparison.
+
+### Model Training & Tuning Setup
+- **Hyperparameter Optimization**: `RandomizedSearchCV` on a representative 250,000 sample stratified tuning subset with 3-fold `StratifiedKFold` cross-validation (5 iterations, optimizing for **Macro F1**).
+- **Search Space**: Tunes `n_estimators`, `max_depth`, `learning_rate`, `subsample`, and `colsample_bytree`.
+- **Histogram-based Training**: Utilizes `tree_method="hist"`, `objective="multi:softprob"`, `eval_metric="mlogloss"`, and sample weighting for fast, scalable multiclass training.
+- **Full-Dataset Retraining**: Final model is retrained on the complete training dataset (1,764,525 samples).
+
+### Evaluation & Generated Artifacts
+- **Serialized Model**: `models/xgboost_model.pkl`
+- **Metrics & Reports**:
+  - `outputs/metrics/xgboost_metrics.json` & `xgb_best_params.json`
+  - `outputs/metrics/xgb_classification_report.csv` & `xgb_confusion_matrix.csv`
+  - `outputs/reports/xgboost_report.txt`
+- **Publication-Quality Visualizations**:
+  - `outputs/plots/xgb_confusion_matrix.png`
+  - `outputs/plots/xgb_feature_importance.png` (Top 20 feature importances)
+  - `outputs/plots/xgb_roc_curves.png` (One-vs-Rest ROC curves per class)
+  - `outputs/plots/xgb_precision_recall.png` (Precision-Recall curves per class)
+
 ## Roadmap
 - [x] **v0.1**: Project Foundation (Directory layout, initial configurations, skeleton scripts)
 - [x] **v0.2**: Dataset Ingestion & Standardization (`data_merger.py`)
@@ -125,11 +149,12 @@ The Random Forest baseline pipeline trains a robust tree ensemble on the preproc
 - [x] **v0.35**: Exploratory Data Analysis (EDA) (`eda.py`)
 - [x] **v0.4**: Feature Engineering & Preprocessing (`preprocessor.py`)
 - [x] **v0.5**: Random Forest Baseline (`random_forest.py`)
-- [ ] **v0.6**: XGBoost Model Training & Benchmark Comparison
+- [x] **v0.6**: XGBoost Model Training & Benchmark Comparison (`xgboost_model.py`)
 - [ ] **v0.7**: Explainable AI Integration (SHAP explanations and visualizations)
 - [ ] **v0.8**: Flask API & Web Dashboard Interface
 - [ ] **v0.9**: Report Generation (PDF reports using ReportLab) & Model Monitoring
 - [ ] **v1.0**: Production Release, Optimization, & Comprehensive Testing
+
 
 
 
