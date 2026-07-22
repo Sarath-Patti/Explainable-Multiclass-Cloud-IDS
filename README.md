@@ -59,7 +59,7 @@ pip install -r requirements.txt
 ```
 
 ## Usage Instructions
-Run the modules in sequence to ingest, profile, clean, analyze, and preprocess the dataset:
+Run the modules in sequence to ingest, profile, clean, analyze, preprocess the dataset, and train the baseline model:
 
 ```bash
 # 1. Merge and standardize raw dataset files
@@ -76,6 +76,9 @@ python3 src/analysis/eda.py
 
 # 5. Preprocess and prepare data splits for training
 python3 src/data/preprocessor.py
+
+# 6. Train and evaluate Random Forest baseline model
+python3 src/models/random_forest.py
 ```
 
 ## Feature Engineering & Preprocessing Pipeline
@@ -93,6 +96,27 @@ Resampling methods (such as SMOTE, oversampling, or undersampling) are deferred 
 - **Data Integrity Preservation**: Undersampling discards valuable normal and attack samples, while oversampling generates synthetic samples that may introduce non-existent patterns or inflate false positive rates in real-world network traffic.
 - **Cost-Sensitive Class-Weighted Learning**: By computing balanced class weights exclusively from the training partition and passing them directly to the model's loss function, we preserve all original data structures while ensuring that minority attack classes (e.g., Web Attacks, Botnet traffic) receive appropriate penalty weights during training.
 
+## Random Forest Baseline Model Pipeline (v0.5)
+The Random Forest baseline pipeline trains a robust tree ensemble on the preprocessed training dataset while incorporating class weighting and efficient hyperparameter tuning.
+
+### Model Training & Tuning Setup
+- **Stratified Subset Tuning**: Hyperparameter tuning is executed on a representative stratified subset of 250,000 training samples using `RandomizedSearchCV` with 3-fold `StratifiedKFold` cross-validation (5 iterations, optimizing for **Macro F1**). This significantly reduces computation time while maintaining statistical rigor and avoiding data leakage.
+- **Full-Dataset Retraining**: After selecting the optimal hyperparameters (`n_estimators`, `max_depth`, `min_samples_split`, `min_samples_leaf`, and `max_features`), the final Random Forest model is retrained on the complete training dataset (1,764,525 samples).
+- **Cost-Sensitive Learning**: Configured with pre-calculated balanced `class_weight` dictionary to penalize minority attack classification errors without synthetic resampling.
+- **Out-of-Bag Validation**: `oob_score=True` to compute unbiased generalized error during ensemble construction.
+
+### Evaluation & Generated Artifacts
+- **Serialized Model**: `models/random_forest.pkl`
+- **Metrics & Reports**:
+  - `outputs/metrics/rf_metrics.json` & `rf_best_params.json`
+  - `outputs/metrics/rf_classification_report.csv` & `rf_confusion_matrix.csv`
+  - `outputs/reports/random_forest_report.txt`
+- **Publication-Quality Visualizations**:
+  - `outputs/plots/rf_confusion_matrix.png`
+  - `outputs/plots/rf_feature_importance.png` (Top 20 Gini feature importances)
+  - `outputs/plots/rf_roc_curves.png` (One-vs-Rest ROC curves per class)
+  - `outputs/plots/rf_precision_recall.png` (Precision-Recall curves per class)
+
 ## Roadmap
 - [x] **v0.1**: Project Foundation (Directory layout, initial configurations, skeleton scripts)
 - [x] **v0.2**: Dataset Ingestion & Standardization (`data_merger.py`)
@@ -100,10 +124,12 @@ Resampling methods (such as SMOTE, oversampling, or undersampling) are deferred 
 - [x] **v0.3**: Data Cleaning Pipeline (`data_cleaner.py`)
 - [x] **v0.35**: Exploratory Data Analysis (EDA) (`eda.py`)
 - [x] **v0.4**: Feature Engineering & Preprocessing (`preprocessor.py`)
-- [ ] **v0.5**: Model Training & Multiclass Classification (XGBoost, Scikit-learn)
-- [ ] **v0.6**: Explainable AI Integration (SHAP explanations and visualizations)
-- [ ] **v0.7**: Flask API & Web Dashboard Interface
-- [ ] **v0.8**: Report Generation (PDF reports using ReportLab) & Model Monitoring
+- [x] **v0.5**: Random Forest Baseline (`random_forest.py`)
+- [ ] **v0.6**: XGBoost Model Training & Benchmark Comparison
+- [ ] **v0.7**: Explainable AI Integration (SHAP explanations and visualizations)
+- [ ] **v0.8**: Flask API & Web Dashboard Interface
+- [ ] **v0.9**: Report Generation (PDF reports using ReportLab) & Model Monitoring
 - [ ] **v1.0**: Production Release, Optimization, & Comprehensive Testing
+
 
 
