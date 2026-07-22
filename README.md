@@ -82,6 +82,9 @@ python3 src/models/random_forest.py
 
 # 7. Train and evaluate XGBoost baseline model
 python3 src/models/xgboost_model.py
+
+# 8. Perform model comparison and comparative benchmark analysis
+python3 src/analysis/model_comparison.py
 ```
 
 ## Feature Engineering & Preprocessing Pipeline
@@ -141,6 +144,19 @@ The XGBoost baseline pipeline trains a histogram-based Gradient Boosted Decision
   - `outputs/plots/xgb_roc_curves.png` (One-vs-Rest ROC curves per class)
   - `outputs/plots/xgb_precision_recall.png` (Precision-Recall curves per class)
 
+## Model Comparison & Benchmark Analysis (v0.7)
+The model comparison module evaluates Random Forest and XGBoost side-by-side across overall test performance, class-wise detection rates, and computational latencies.
+
+### Generated Artifacts & Visualizations
+- **Comparative Reports & Metrics**:
+  - `outputs/reports/model_comparison_report.txt`
+  - `outputs/metrics/model_comparison.json`
+- **Publication-Quality Visualizations**:
+  - `outputs/plots/model_comparison_metrics.png` (Overall metric side-by-side comparison)
+  - `outputs/plots/per_class_f1_comparison.png` (Per-class F1-score comparison)
+  - `outputs/plots/per_class_recall_comparison.png` (Per-class Recall comparison)
+  - `outputs/plots/training_inference_time.png` (Training and inference latency trade-offs)
+
 ## Roadmap
 - [x] **v0.1**: Project Foundation (Directory layout, initial configurations, skeleton scripts)
 - [x] **v0.2**: Dataset Ingestion & Standardization (`data_merger.py`)
@@ -150,10 +166,11 @@ The XGBoost baseline pipeline trains a histogram-based Gradient Boosted Decision
 - [x] **v0.4**: Feature Engineering & Preprocessing (`preprocessor.py`)
 - [x] **v0.5**: Random Forest Baseline (`random_forest.py`)
 - [x] **v0.6**: XGBoost Model Training & Benchmark Comparison (`xgboost_model.py`)
-- [ ] **v0.7**: Explainable AI Integration (SHAP explanations and visualizations)
-- [ ] **v0.8**: Flask API & Web Dashboard Interface
-- [ ] **v0.9**: Report Generation (PDF reports using ReportLab) & Model Monitoring
-- [ ] **v1.0**: Production Release, Optimization, & Comprehensive Testing
+- [x] **v0.7**: Comparative Model Evaluation & Benchmark Analysis (`model_comparison.py`)
+- [ ] **v0.8**: Explainable AI Integration (SHAP explanations and visualizations)
+- [ ] **v0.9**: Flask API & Web Dashboard Interface
+- [ ] **v1.0**: Report Generation (PDF reports using ReportLab), Monitoring & Production Release
+
 
 
 
