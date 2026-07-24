@@ -85,6 +85,9 @@ python3 src/models/xgboost_model.py
 
 # 8. Perform model comparison and comparative benchmark analysis
 python3 src/analysis/model_comparison.py
+
+# 9. Compute SHAP explainability and model interpretability
+python3 src/explainability/shap_explainer.py
 ```
 
 ## Feature Engineering & Preprocessing Pipeline
@@ -157,6 +160,24 @@ The model comparison module evaluates Random Forest and XGBoost side-by-side acr
   - `outputs/plots/per_class_recall_comparison.png` (Per-class Recall comparison)
   - `outputs/plots/training_inference_time.png` (Training and inference latency trade-offs)
 
+## SHAP Explainability & Model Interpretability (v0.8)
+The SHAP explainability module utilizes `shap.TreeExplainer` on a representative stratified test sample (1,000 instances) to extract global, local, and class-wise feature attributions for the trained XGBoost model.
+
+### Key Explainability Features & Outputs
+- **Global Interpretability**:
+  - `outputs/explainability/global_summary.png` (Multiclass stacked feature impact summary)
+  - `outputs/explainability/global_beeswarm.png` (Aggregated feature impact beeswarm distribution)
+  - `outputs/explainability/global_bar.png` (Mean absolute SHAP feature importance bar plot)
+  - `outputs/explainability/feature_importance.csv` (Ranked global feature importance table)
+- **Local Instance Interpretability**:
+  - `outputs/explainability/waterfall_<class>.png` (Local waterfall plots per attack class instance)
+  - `outputs/explainability/decision_<class>.png` (Decision path plots per attack class instance)
+  - `outputs/explainability/force_<class>.html` (Interactive D3 force plots per attack class instance)
+- **Class-wise Interpretability & Research Reports**:
+  - `outputs/explainability/class_feature_importance.csv` (Class-specific feature rankings)
+  - `outputs/explainability/shap_values.pkl` & `shap_metrics.json` (Serialized SHAP objects and metrics JSON)
+  - `outputs/reports/shap_report.txt` (Comprehensive research report covering Bot and Web Attack deep dives, comparison with built-in XGBoost Gini importance, and SOC operational implications)
+
 ## Roadmap
 - [x] **v0.1**: Project Foundation (Directory layout, initial configurations, skeleton scripts)
 - [x] **v0.2**: Dataset Ingestion & Standardization (`data_merger.py`)
@@ -167,11 +188,7 @@ The model comparison module evaluates Random Forest and XGBoost side-by-side acr
 - [x] **v0.5**: Random Forest Baseline (`random_forest.py`)
 - [x] **v0.6**: XGBoost Model Training & Benchmark Comparison (`xgboost_model.py`)
 - [x] **v0.7**: Comparative Model Evaluation & Benchmark Analysis (`model_comparison.py`)
-- [ ] **v0.8**: Explainable AI Integration (SHAP explanations and visualizations)
+- [x] **v0.8**: Explainable AI Integration (`shap_explainer.py`)
 - [ ] **v0.9**: Flask API & Web Dashboard Interface
-- [ ] **v1.0**: Report Generation (PDF reports using ReportLab), Monitoring & Production Release
-
-
-
 
 
