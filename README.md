@@ -88,6 +88,9 @@ python3 src/analysis/model_comparison.py
 
 # 9. Compute SHAP explainability and model interpretability
 python3 src/explainability/shap_explainer.py
+
+# 10. Perform SHAP-guided feature selection and optimization
+python3 src/analysis/shap_feature_selection.py
 ```
 
 ## Feature Engineering & Preprocessing Pipeline
@@ -178,6 +181,28 @@ The SHAP explainability module utilizes `shap.TreeExplainer` on a representative
   - `outputs/explainability/shap_values.pkl` & `shap_metrics.json` (Serialized SHAP objects and metrics JSON)
   - `outputs/reports/shap_report.txt` (Comprehensive research report covering Bot and Web Attack deep dives, comparison with built-in XGBoost Gini importance, and SOC operational implications)
 
+## SHAP-Guided Feature Selection & Optimization (v0.9)
+The SHAP-guided feature selection module systematically evaluates XGBoost models across top SHAP feature subsets (Top 70, 50, 40, 30, 20, 15, 10) to determine the smallest feature space that preserves $\ge 99\%$ of baseline Macro F1 performance.
+
+### Key Optimization Outputs & Artifacts
+- **Metrics & Reports**:
+  - `outputs/metrics/shap_feature_selection.json`
+  - `outputs/reports/shap_feature_selection_report.txt`
+  - `outputs/metrics/timing_statistics.json` (Multi-run inference latency and throughput statistics)
+  - `outputs/reports/shap_feature_selection_timing_refinement_report.txt` (Timing refinement & prediction throughput validation report)
+- **Publication-Quality Trade-off Figures**:
+  - `outputs/plots/feature_count_vs_f1.png` (Feature Count vs Macro F1)
+  - `outputs/plots/feature_count_vs_accuracy.png` (Feature Count vs Accuracy)
+  - `outputs/plots/feature_count_vs_auc.png` (Feature Count vs Macro ROC-AUC)
+  - `outputs/plots/feature_count_vs_training_time.png` (Feature Count vs Training Time)
+  - `outputs/plots/feature_count_vs_inference_time.png` (Feature Count vs Test Inference Time)
+
+### Independent Timing Benchmark Execution
+To re-run only the multi-run inference timing & throughput benchmark independently without retraining models or re-evaluating feature selection:
+```bash
+python3 src/analysis/shap_feature_selection.py --timing-only
+```
+
 ## Roadmap
 - [x] **v0.1**: Project Foundation (Directory layout, initial configurations, skeleton scripts)
 - [x] **v0.2**: Dataset Ingestion & Standardization (`data_merger.py`)
@@ -189,6 +214,5 @@ The SHAP explainability module utilizes `shap.TreeExplainer` on a representative
 - [x] **v0.6**: XGBoost Model Training & Benchmark Comparison (`xgboost_model.py`)
 - [x] **v0.7**: Comparative Model Evaluation & Benchmark Analysis (`model_comparison.py`)
 - [x] **v0.8**: Explainable AI Integration (`shap_explainer.py`)
-- [ ] **v0.9**: Flask API & Web Dashboard Interface
-
-
+- [x] **v0.9**: SHAP-Guided Feature Selection (`shap_feature_selection.py`)
+- [ ] **v1.0**: Flask API, Web Dashboard, PDF Report Generation & Production Release
