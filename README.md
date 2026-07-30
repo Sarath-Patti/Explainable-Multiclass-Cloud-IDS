@@ -15,47 +15,73 @@ The repository is organized as follows:
 
 ```
 Explainable-Multiclass-Cloud-IDS/
+├── backend/           # FastAPI REST API backend (Python 3.11+)
+│   ├── app/
+│   │   ├── api/v1/    # Versioned API routes & endpoints (/health)
+│   │   ├── core/      # Application settings & CORS configuration
+│   │   ├── models/    # Data domain models
+│   │   ├── schemas/   # Pydantic request/response schemas
+│   │   ├── services/  # Inference & business logic
+│   │   └── main.py    # FastAPI main entrypoint
+│   └── requirements.txt
+├── frontend/          # React + TypeScript + Vite + Tailwind CSS frontend
+│   ├── src/
+│   │   ├── components/# Reusable UI components (Navbar, Footer, HealthStatus)
+│   │   ├── pages/     # Page views (Home, Dashboard, Upload)
+│   │   ├── services/  # Axios API client (/api/v1)
+│   │   ├── hooks/     # Custom React hooks (useHealth)
+│   │   ├── types/     # TypeScript interfaces
+│   │   ├── App.tsx    # Application layout & router configuration
+│   │   └── main.tsx   # React DOM entrypoint
+│   └── package.json
 ├── configs/           # Configuration files
 ├── data/
 │   ├── raw/           # Original, unmodified datasets
 │   ├── merged/        # Datasets combined from multiple sources
 │   └── processed/     # Cleaned datasets and train/validation/test splits
 ├── src/
-│   ├── data/          # Modules for ingestion, cleaning, and preprocessing
-│   ├── analysis/      # Exploratory data analysis (EDA) utilities
-│   ├── models/        # Model architectures, training, and evaluation scripts
-│   ├── explainability/# Explainable AI (SHAP) implementation scripts
-│   ├── visualization/ # Plotting and data visualization functions
+│   ├── data/          # Preprocessing & cleaning pipeline scripts
+│   ├── analysis/      # EDA & feature selection analysis scripts
+│   ├── models/        # Model architectures, RF & XGBoost training scripts
+│   ├── explainability/# SHAP explainability implementation scripts
 │   └── utils/         # Helper functions and shared utilities
 ├── models/            # Serialized models and preprocessing artifacts
-├── app/               # Flask application and REST API endpoints
-├── tests/             # Unit and integration test suites
-├── notebooks/         # Jupyter notebooks for experimentation and prototyping
-├── outputs/
-│   ├── plots/         # Generated figures and charts
-│   ├── reports/       # Generated PDF/HTML reports
-│   ├── metrics/       # Model evaluation logs and performance metrics
-│   └── logs/          # Module execution log files
-├── requirements.txt   # Package dependencies
-├── .gitignore         # Version control exclusion file
+├── outputs/           # Generated figures, reports, metrics, and execution logs
+├── requirements.txt   # Core Python dependencies
 ├── README.md          # Project documentation
 └── main.py            # Application entrypoint
 ```
 
-## Installation
-To set up the development environment, clone this repository and install the dependencies:
+## Installation & Setup
 
+### 1. ML Pipeline & Core Dependencies
 ```bash
 # Clone the repository
 git clone https://github.com/<username>/Explainable-Multiclass-Cloud-IDS.git
 cd Explainable-Multiclass-Cloud-IDS
 
-# Create and activate a virtual environment (optional but recommended)
+# Create and activate a virtual environment
 python3 -m venv venv
 source venv/bin/activate
 
 # Install the required packages
 pip install -r requirements.txt
+```
+
+### 2. FastAPI Backend Server (v1.0)
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+# OpenAPI Docs: http://localhost:8000/api/v1/docs
+```
+
+### 3. React Frontend Dashboard (v1.0)
+```bash
+cd frontend
+npm install
+npm run dev
+# Dashboard UI: http://localhost:5173
 ```
 
 ## Usage Instructions
@@ -215,4 +241,4 @@ python3 src/analysis/shap_feature_selection.py --timing-only
 - [x] **v0.7**: Comparative Model Evaluation & Benchmark Analysis (`model_comparison.py`)
 - [x] **v0.8**: Explainable AI Integration (`shap_explainer.py`)
 - [x] **v0.9**: SHAP-Guided Feature Selection (`shap_feature_selection.py`)
-- [ ] **v1.0**: Flask API, Web Dashboard, PDF Report Generation & Production Release
+- [x] **v1.0**: React + FastAPI Foundation (Decoupled architecture, CORS, /api/v1/health status, React Router & Security Operations Dashboard UI)
