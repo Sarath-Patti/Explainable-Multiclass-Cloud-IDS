@@ -24,6 +24,24 @@ export interface PredictionResponse {
   predictions: PredictionItem[];
 }
 
+export interface FeatureContribution {
+  feature: string;
+  value: number;
+  shap_value: number;
+}
+
+export interface ExplainRequest {
+  row: number;
+  features: Record<string, number | string>;
+}
+
+export interface ExplainResponse {
+  prediction: string;
+  confidence: number;
+  base_value: number;
+  top_features: FeatureContribution[];
+}
+
 export interface MissingFeaturesErrorDetail {
   error: string;
   message: string;

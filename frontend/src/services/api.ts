@@ -1,5 +1,5 @@
 import axios, { AxiosProgressEvent } from 'axios';
-import { HealthResponse, PredictionResponse, PredictionItem } from '../types/api';
+import { HealthResponse, PredictionResponse, PredictionItem, ExplainRequest, ExplainResponse } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
@@ -8,7 +8,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 60000, // 60s timeout for batch predictions
+  timeout: 60000, // 60s timeout for batch predictions and SHAP explanations
 });
 
 /**
@@ -37,6 +37,15 @@ export const predictBatchCSV = async (
     onUploadProgress,
   });
 
+  return response.data;
+};
+
+/**
+ * Request SHAP feature attributions for a single prediction row instance.
+ * POST /api/v1/explain
+ */
+export const explainPrediction = async (request: ExplainRequest): Promise<ExplainResponse> => {
+  const response = await apiClient.post<ExplainResponse>('/explain', request);
   return response.data;
 };
 

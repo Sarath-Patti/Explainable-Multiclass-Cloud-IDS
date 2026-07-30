@@ -1,16 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { PredictionItem } from '../../types/api';
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown, ShieldCheck, ShieldAlert, Filter } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown, ShieldCheck, ShieldAlert, Sparkles } from 'lucide-react';
 
 interface PredictionTableProps {
   predictions: PredictionItem[];
+  onExplain?: (item: PredictionItem) => void;
 }
 
 type SortField = 'row' | 'prediction' | 'confidence';
 type SortDirection = 'asc' | 'desc';
 type FilterCategory = 'all' | 'attacks' | 'benign';
 
-export const PredictionTable: React.FC<PredictionTableProps> = ({ predictions }) => {
+export const PredictionTable: React.FC<PredictionTableProps> = ({ predictions, onExplain }) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<FilterCategory>('all');
   const [sortField, setSortField] = useState<SortField>('row');
@@ -181,12 +182,13 @@ export const PredictionTable: React.FC<PredictionTableProps> = ({ predictions })
               </th>
 
               <th className="py-3 px-4 select-none">Risk Level</th>
+              <th className="py-3 px-4 select-none text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/60 text-slate-300">
             {paginatedData.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-8 text-center text-slate-500 text-sm">
+                <td colSpan={5} className="py-8 text-center text-slate-500 text-sm">
                   No prediction records match your search or filter criteria.
                 </td>
               </tr>
@@ -235,6 +237,18 @@ export const PredictionTable: React.FC<PredictionTableProps> = ({ predictions })
                         <span className="px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-semibold tracking-wide uppercase">
                           Critical Alert
                         </span>
+                      )}
+                    </td>
+
+                    <td className="py-3 px-4 text-right">
+                      {onExplain && (
+                        <button
+                          onClick={() => onExplain(item)}
+                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 font-semibold text-xs border border-slate-700 transition-colors shadow-sm"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Explain</span>
+                        </button>
                       )}
                     </td>
                   </tr>

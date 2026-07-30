@@ -4,19 +4,72 @@ import { SummaryCards } from '../components/SummaryCards/SummaryCards';
 import { PredictionTable } from '../components/PredictionTable/PredictionTable';
 import { LoadingState } from '../components/Loading/LoadingState';
 import { ErrorAlert } from '../components/ErrorAlert/ErrorAlert';
+import { ExplainDrawer } from '../components/ExplainDrawer/ExplainDrawer';
 import { predictBatchCSV, exportPredictionsToCSV } from '../services/api';
-import { PredictionResponse, ApiError } from '../types/api';
+import { PredictionResponse, PredictionItem, ApiError } from '../types/api';
 import { UploadCloud, Download, RotateCcw, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
 
 type PredictionStatus = 'idle' | 'uploading' | 'predicting' | 'success' | 'error';
+
+/**
+ * Utility function to parse CSV file text into an array of feature objects indexed by row number.
+ */
+const parseCSVToRows = async (file: File): Promise<Record<string, number | string>[]> => {
+  const text = await file.text();
+  const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  if (lines.length <= 1) return [];
+
+  const parseLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim().replace(/^"|"$/g, ''));
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim().replace(/^"|"$/g, ''));
+    return result;
+  };
+
+  const headers = parseLine(lines[0]);
+  const rows: Record<string, number | string>[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseLine(lines[i]);
+    if (values.length === headers.length) {
+      const rowObj: Record<string, number | string> = {};
+      headers.forEach((h, idx) => {
+        const val = values[idx];
+        const num = Number(val);
+        rowObj[h] = !isNaN(num) && val !== '' ? num : val;
+      });
+      rows.push(rowObj);
+    }
+  }
+
+  return rows;
+};
 
 export const Upload: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [status, setStatus] = useState<PredictionStatus>('idle');
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [predictionResponse, setPredictionResponse] = useState<PredictionResponse | null>(null);
+  const [parsedRows, setParsedRows] = useState<Record<string, number | string>[]>([]);
   const [error, setError] = useState<ApiError | null>(null);
+
+  // SHAP Drawer State
+  const [explainRow, setExplainRow] = useState<PredictionItem | null>(null);
+  const [explainFeatureData, setExplainFeatureData] = useState<Record<string, number | string> | undefined>(undefined);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
@@ -29,9 +82,13 @@ export const Upload: React.FC = () => {
   const handleClear = () => {
     setSelectedFile(null);
     setPredictionResponse(null);
+    setParsedRows([]);
     setError(null);
     setStatus('idle');
     setUploadProgress(0);
+    setExplainRow(null);
+    setExplainFeatureData(undefined);
+    setIsDrawerOpen(false);
   };
 
   const handleSubmit = async (file: File) => {
@@ -40,6 +97,11 @@ export const Upload: React.FC = () => {
     setError(null);
 
     try {
+      // 1. Parse CSV rows for client-side feature lookup
+      const rows = await parseCSVToRows(file);
+      setParsedRows(rows);
+
+      // 2. Submit CSV to backend prediction API
       const data = await predictBatchCSV(file, (progressEvent) => {
         if (progressEvent.total) {
           const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -55,6 +117,7 @@ export const Upload: React.FC = () => {
     } catch (err: unknown) {
       setStatus('error');
       setPredictionResponse(null);
+      setParsedRows([]);
 
       if (axios.isAxiosError(err)) {
         if (err.response) {
@@ -98,6 +161,14 @@ export const Upload: React.FC = () => {
     }
   };
 
+  const handleExplainRow = (item: PredictionItem) => {
+    setExplainRow(item);
+    // Retrieve the exact row's feature key-value mapping from in-memory parsed rows
+    const rowFeatures = parsedRows[item.row] || {};
+    setExplainFeatureData(rowFeatures);
+    setIsDrawerOpen(true);
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 py-6">
       {/* Header Banner */}
@@ -108,7 +179,7 @@ export const Upload: React.FC = () => {
             <span>Multiclass Batch Prediction Workflow</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Upload CSV network flow data to evaluate real-time threat classification using the trained Top-14 XGBoost model.
+            Upload CSV network flow data to evaluate real-time threat classification and interactive SHAP feature attributions.
           </p>
         </div>
 
@@ -119,7 +190,7 @@ export const Upload: React.FC = () => {
           </span>
           <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-400 flex items-center space-x-1">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>v1.2 Release</span>
+            <span>v1.3 SHAP Dashboard</span>
           </span>
         </div>
       </div>
@@ -197,14 +268,25 @@ export const Upload: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-slate-100">Batch Prediction Telemetry Table</h2>
               <span className="text-xs font-mono text-slate-400">
-                Showing predictions for {predictionResponse.predictions.length.toLocaleString()} rows
+                Click "Explain" on any row for instant SHAP feature attributions
               </span>
             </div>
 
-            <PredictionTable predictions={predictionResponse.predictions} />
+            <PredictionTable
+              predictions={predictionResponse.predictions}
+              onExplain={handleExplainRow}
+            />
           </div>
         </div>
       )}
+
+      {/* SHAP Explanation Right-Side Drawer Modal */}
+      <ExplainDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        selectedRow={explainRow}
+        featureData={explainFeatureData}
+      />
     </div>
   );
 };

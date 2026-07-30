@@ -244,3 +244,4 @@ python3 src/analysis/shap_feature_selection.py --timing-only
 - [x] **v1.0**: React + FastAPI Foundation (Decoupled architecture, CORS, /api/v1/health status, React Router & Security Operations Dashboard UI)
 - [x] **v1.1**: Model Inference API (Top-14 XGBoost model singleton loader, CSV feature validation, POST /api/v1/predict batch endpoint)
 - [x] **v1.2**: Frontend Prediction Workflow (Drag-and-drop CSV upload, progress indicator, summary cards, searchable/sortable/paginated prediction table, CSV results export)
+- [x] **v1.3**: Interactive SHAP Explainability Dashboard (TreeExplainer backend service, POST /api/v1/explain, right-side ExplainDrawer, horizontal SHAP contribution bar chart, attribution detail tables)

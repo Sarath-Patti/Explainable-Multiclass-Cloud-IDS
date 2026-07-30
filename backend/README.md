@@ -11,17 +11,20 @@ backend/
 │   │   └── v1/
 │   │       ├── endpoints/
 │   │       │   ├── health.py    # GET /api/v1/health status endpoint
-│   │       │   └── predict.py   # POST /api/v1/predict batch CSV inference
+│   │       │   ├── predict.py   # POST /api/v1/predict batch CSV inference
+│   │       │   └── explain.py   # POST /api/v1/explain SHAP feature attributions
 │   │       └── router.py        # v1 Router
 │   ├── core/
 │   │   └── config.py            # Environment configuration & artifact paths
 │   ├── models/                  # Data models
 │   ├── services/
 │   │   ├── model_loader.py      # Singleton ML binary & label mapping loader
-│   │   └── predictor.py         # Batch feature validation & model inference
+│   │   ├── predictor.py         # Batch feature validation & model inference
+│   │   └── shap_service.py      # TreeExplainer single-instance SHAP service
 │   ├── schemas/
 │   │   ├── health.py            # Health Pydantic response schema
-│   │   └── predict.py           # Prediction request & response schemas
+│   │   ├── predict.py           # Prediction request & response schemas
+│   │   └── explain.py           # SHAP explanation request & response schemas
 │   ├── utils/                   # Helpers
 │   └── main.py                  # FastAPI application entrypoint
 ├── requirements.txt
@@ -50,32 +53,36 @@ backend/
 4. **API Endpoints**:
    - Health Status: `GET http://localhost:8000/api/v1/health`
    - Batch Inference: `POST http://localhost:8000/api/v1/predict` (upload CSV as `file` form-data)
+   - SHAP Explanation: `POST http://localhost:8000/api/v1/explain` (JSON payload)
    - Interactive Swagger UI: `http://localhost:8000/api/v1/docs`
 
-## Batch Prediction API Usage
+## SHAP Explanation API Usage
 
 Example `curl` request:
 ```bash
 curl -X 'POST' \
-  'http://localhost:8000/api/v1/predict' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'file=@test_sample.csv;type=text/csv'
+  'http://localhost:8000/api/v1/explain' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "row": 0,
+    "features": {
+      "Destination Port": 80,
+      "Init_Win_bytes_forward": 29200
+    }
+  }'
 ```
 
 Example JSON Response:
 ```json
 {
-  "summary": {
-    "total_samples": 1000,
-    "predicted_attacks": 213,
-    "predicted_benign": 787
-  },
-  "predictions": [
+  "prediction": "DDoS",
+  "confidence": 0.9984,
+  "base_value": 0.05,
+  "top_features": [
     {
-      "row": 0,
-      "prediction": "BENIGN",
-      "confidence": 0.9984
+      "feature": "Destination Port",
+      "value": 80.0,
+      "shap_value": 4.82
     }
   ]
 }
