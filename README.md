@@ -243,3 +243,4 @@ python3 src/analysis/shap_feature_selection.py --timing-only
 - [x] **v0.9**: SHAP-Guided Feature Selection (`shap_feature_selection.py`)
 - [x] **v1.0**: React + FastAPI Foundation (Decoupled architecture, CORS, /api/v1/health status, React Router & Security Operations Dashboard UI)
 - [x] **v1.1**: Model Inference API (Top-14 XGBoost model singleton loader, CSV feature validation, POST /api/v1/predict batch endpoint)
+- [x] **v1.2**: Frontend Prediction Workflow (Drag-and-drop CSV upload, progress indicator, summary cards, searchable/sortable/paginated prediction table, CSV results export)
