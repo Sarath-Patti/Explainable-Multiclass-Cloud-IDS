@@ -101,7 +101,29 @@ docker compose down
 - **Backend Model Artifact Missing**: Ensure `models/xgboost_shap_selected.pkl` exists in the repository before building the backend Docker image.
 - **Frontend Nginx Proxy Timeout**: Increase `client_max_body_size` in `frontend/nginx.conf` if uploading exceptionally large CSV files (>100MB).
 
-### 3. Local Development Setup (Without Docker)
+### 3. Production CI/CD Pipeline (v1.5)
+
+The repository features an automated GitHub Actions workflow (`.github/workflows/ci-cd.yml`):
+
+#### Automated Checks (On Pull Requests & Pushes)
+- **Frontend CI**: Runs `npm ci` and `npm run build` using Node 20 with `npm` dependency caching.
+- **Backend CI**: Installs Python 3.11 requirements with `pip` caching and verifies module compilation.
+- **Docker Compose Spec**: Runs `docker compose config` validation.
+
+#### Registry Publishing (On `main` Branch Pushes & Version Tags)
+- **Docker Buildx & Layer Caching**: Utilizes `docker/setup-buildx-action@v3` with GitHub Actions cache (`type=gha`) for fast layer reuse.
+- **GHCR Image Publishing**: Automatically builds and pushes production images to GitHub Container Registry:
+  - Frontend: `ghcr.io/<owner>/explainable-multiclass-cloud-ids-frontend:latest`
+  - Backend: `ghcr.io/<owner>/explainable-multiclass-cloud-ids-backend:latest`
+- **Required Secrets**: Authenticates securely using GitHub's built-in `${{ secrets.GITHUB_TOKEN }}` (no external credentials required).
+
+```bash
+# Pull published production images from GHCR
+docker pull ghcr.io/<owner>/explainable-multiclass-cloud-ids-frontend:latest
+docker pull ghcr.io/<owner>/explainable-multiclass-cloud-ids-backend:latest
+```
+
+### 4. Local Development Setup (Without Docker)
 
 #### FastAPI Backend Server
 ```bash
@@ -279,3 +301,4 @@ python3 src/analysis/shap_feature_selection.py --timing-only
 - [x] **v1.2**: Frontend Prediction Workflow (Drag-and-drop CSV upload, progress indicator, summary cards, searchable/sortable/paginated prediction table, CSV results export)
 - [x] **v1.3**: Interactive SHAP Explainability Dashboard (TreeExplainer backend service, POST /api/v1/explain, right-side ExplainDrawer, horizontal SHAP contribution bar chart, attribution detail tables)
 - [x] **v1.4**: Dockerized Deployment (Multi-stage React Nginx container, lightweight Python FastAPI container, Docker Compose orchestration, health checks)
+- [x] **v1.5**: Production CI/CD (GitHub Actions workflow, Docker Buildx GHA caching, GHCR registry publishing)
