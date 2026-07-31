@@ -172,3 +172,9 @@ outputs/logs/*
 
 # Generated CSV reports
 outputs/**/*.csv
+
+# Explicitly track required model inference artifacts in git
+!models/.gitkeep
+!models/label_mapping.json
+!models/label_encoder.pkl
+!models/xgboost_shap_selected.pkl
