@@ -1,6 +1,6 @@
 import React from 'react';
 import { useHealth } from '../hooks/useHealth';
-import { CheckCircle2, AlertCircle, RefreshCw, Server, Clock, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, AlertCircle, RefreshCw, Server, Clock } from 'lucide-react';
 
 export const HealthStatus: React.FC = () => {
   const { health, loading, error, latencyMs, refetch } = useHealth();

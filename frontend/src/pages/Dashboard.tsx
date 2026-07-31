@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart2, ShieldCheck, Zap, Layers, Activity, FileText, CheckCircle2 } from 'lucide-react';
+import { BarChart2, Layers, Activity } from 'lucide-react';
 import { HealthStatus } from '../components/HealthStatus';
 
 export const Dashboard: React.FC = () => {

@@ -68,20 +68,53 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. FastAPI Backend Server (v1.0)
+### 2. Dockerized Deployment (v1.4 Production Setup)
+
+#### Prerequisites
+- [Docker Engine](https://docs.docker.com/get-docker/) 20.10+
+- [Docker Compose](https://docs.docker.com/compose/install/) v2.0+
+
+#### Build & Launch Multi-Container Stack
+```bash
+# Build and launch both frontend and backend containers in detached mode
+docker compose up --build -d
+
+# View container status & health checks
+docker compose ps
+
+# View live application logs
+docker compose logs -f
+```
+
+#### Stop & Remove Stack
+```bash
+docker compose down
+```
+
+#### Container Access URLs
+- **React Web Dashboard UI**: `http://localhost` or `http://localhost:5173`
+- **FastAPI OpenAPI Swagger Docs**: `http://localhost:8000/api/v1/docs`
+- **Backend Health Check**: `http://localhost:8000/api/v1/health`
+
+#### Troubleshooting Container Deployment
+- **Port Conflict (80 or 8000 already in use)**: Stop local Uvicorn/Vite processes (`lsof -i :8000`, `lsof -i :5173`) before running `docker compose up`.
+- **Backend Model Artifact Missing**: Ensure `models/xgboost_shap_selected.pkl` exists in the repository before building the backend Docker image.
+- **Frontend Nginx Proxy Timeout**: Increase `client_max_body_size` in `frontend/nginx.conf` if uploading exceptionally large CSV files (>100MB).
+
+### 3. Local Development Setup (Without Docker)
+
+#### FastAPI Backend Server
 ```bash
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
-# OpenAPI Docs: http://localhost:8000/api/v1/docs
 ```
 
-### 3. React Frontend Dashboard (v1.0)
+#### React Frontend Development Server
 ```bash
 cd frontend
 npm install
 npm run dev
-# Dashboard UI: http://localhost:5173
 ```
 
 ## Usage Instructions
@@ -245,3 +278,4 @@ python3 src/analysis/shap_feature_selection.py --timing-only
 - [x] **v1.1**: Model Inference API (Top-14 XGBoost model singleton loader, CSV feature validation, POST /api/v1/predict batch endpoint)
 - [x] **v1.2**: Frontend Prediction Workflow (Drag-and-drop CSV upload, progress indicator, summary cards, searchable/sortable/paginated prediction table, CSV results export)
 - [x] **v1.3**: Interactive SHAP Explainability Dashboard (TreeExplainer backend service, POST /api/v1/explain, right-side ExplainDrawer, horizontal SHAP contribution bar chart, attribution detail tables)
+- [x] **v1.4**: Dockerized Deployment (Multi-stage React Nginx container, lightweight Python FastAPI container, Docker Compose orchestration, health checks)
