@@ -5,6 +5,7 @@ import logging
 from fastapi import APIRouter, File, UploadFile, HTTPException, status
 import pandas as pd
 
+from app.services.model_loader import model_loader
 from app.schemas.predict import PredictionResponse
 from app.services.predictor import (
     PredictionService,
@@ -52,9 +53,10 @@ async def predict(file: UploadFile = File(...)) -> PredictionResponse:
             detail="Uploaded file is empty (0 bytes)."
         )
 
-    # 3. Parse CSV content into pandas DataFrame
+    # 3. Parse CSV content into pandas DataFrame (filtered to target feature set for high throughput)
+    expected_set = set(model_loader.expected_features)
     try:
-        df = pd.read_csv(io.BytesIO(content))
+        df = pd.read_csv(io.BytesIO(content), usecols=lambda col: col in expected_set, engine="c")
     except pd.errors.EmptyDataError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

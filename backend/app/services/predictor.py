@@ -71,25 +71,20 @@ class PredictionService:
         pred_indices = np.argmax(probabilities, axis=1)
         confidences = np.max(probabilities, axis=1)
 
-        # 5. Format predictions and compute summary statistics
-        prediction_items: List[PredictionItem] = []
-        benign_count = 0
+        # 5. Format predictions and compute summary statistics (vectorized)
+        labels = [index_to_label.get(int(idx), f"Unknown_{idx}") for idx in pred_indices]
+        rounded_confidences = np.round(confidences, 4)
 
-        for i in range(len(X)):
-            idx = int(pred_indices[i])
-            label = index_to_label.get(idx, f"Unknown_{idx}")
-            conf = float(round(confidences[i], 4))
+        benign_count = sum(1 for lbl in labels if lbl.upper() == "BENIGN")
 
-            if label.upper() == "BENIGN":
-                benign_count += 1
-
-            prediction_items.append(
-                PredictionItem(
-                    row=i,
-                    prediction=label,
-                    confidence=conf
-                )
+        prediction_items = [
+            PredictionItem(
+                row=i,
+                prediction=labels[i],
+                confidence=float(rounded_confidences[i])
             )
+            for i in range(len(X))
+        ]
 
         total_samples = len(X)
         attack_count = total_samples - benign_count

@@ -1,0 +1,54 @@
+[
+  {
+    "num_rows": 100,
+    "num_runs": 15,
+    "mean_csv_bytes_ms": 1.4877082668438864,
+    "mean_csv_parse_ms": 0.9818083339875253,
+    "mean_feat_slice_ms": 0.3328915995856126,
+    "mean_clean_ms": 0.0804500009204882,
+    "mean_model_exec_ms": 4.184861132428826,
+    "mean_format_ms": 0.2397723995575992,
+    "mean_total_ms": 7.307927532626006,
+    "per_row_ms": 0.07307927532626006,
+    "throughput_rows_sec": 13683.770063886546
+  },
+  {
+    "num_rows": 500,
+    "num_runs": 15,
+    "mean_csv_bytes_ms": 6.964330534295489,
+    "mean_csv_parse_ms": 2.358833600010257,
+    "mean_feat_slice_ms": 0.43219166739921394,
+    "mean_clean_ms": 0.08992200067344432,
+    "mean_model_exec_ms": 6.596522135077976,
+    "mean_format_ms": 1.220622265827842,
+    "mean_total_ms": 17.66289446580534,
+    "per_row_ms": 0.03532578893161068,
+    "throughput_rows_sec": 28307.931124651175
+  },
+  {
+    "num_rows": 1000,
+    "num_runs": 15,
+    "mean_csv_bytes_ms": 15.981011132438047,
+    "mean_csv_parse_ms": 4.826616534167745,
+    "mean_feat_slice_ms": 0.5094941991652983,
+    "mean_clean_ms": 0.11191933396427582,
+    "mean_model_exec_ms": 14.16531393333571,
+    "mean_format_ms": 2.7664082668100796,
+    "mean_total_ms": 38.361458401292715,
+    "per_row_ms": 0.038361458401292715,
+    "throughput_rows_sec": 26067.83062153606
+  },
+  {
+    "num_rows": 5000,
+    "num_runs": 15,
+    "mean_csv_bytes_ms": 95.35146933437015,
+    "mean_csv_parse_ms": 26.283363800515264,
+    "mean_feat_slice_ms": 0.694363867417754,
+    "mean_clean_ms": 0.16131673328345641,
+    "mean_model_exec_ms": 63.54869453498395,
+    "mean_format_ms": 17.707697199269507,
+    "mean_total_ms": 203.74828899948625,
+    "per_row_ms": 0.04074965779989725,
+    "throughput_rows_sec": 24540.08337715468
+  }
+]

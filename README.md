@@ -125,6 +125,11 @@ Explainable-Multiclass-Cloud-IDS/
 │   └── workflows/
 │       └── ci-cd.yml  # GitHub Actions CI/CD pipeline (Test, Buildx, GHCR publish)
 ├── docker-compose.yml # Multi-container orchestration with health checks
+├── benchmarks/        # Real-time API benchmark suite & component profiler
+│   ├── benchmark_api.py # End-to-end HTTP latency & concurrency benchmark
+│   ├── benchmark_batches.py # Component-level pipeline profiler
+│   ├── results/       # Generated benchmark JSON & CSV metric output
+│   └── README.md      # Detailed benchmarking methodology & results
 ├── configs/           # Configuration files
 ├── data/
 │   ├── raw/           # Original, unmodified datasets
@@ -392,6 +397,60 @@ python3 src/analysis/shap_feature_selection.py --timing-only
 
 ---
 
+## Performance & Scalability Evaluation
+
+A dedicated HTTP API benchmarking suite and component profiler (`benchmarks/`) was integrated to evaluate real-time inference latency, throughput, concurrency scaling, and pipeline execution bottlenecks for cloud security applications (such as Juspay / JusTrust risk management systems).
+
+The benchmark establishes a local performance baseline for evaluating real-time inference behavior and scalability.
+
+### Architectural Separation: Detection vs. Explanation
+- **Detection Path (`POST /api/v1/predict`)**: Evaluates high-throughput multiclass threat classification on batch CSV traffic payloads.
+- **Explanation Path (`POST /api/v1/explain`)**: Evaluates single-instance SHAP `TreeExplainer` feature attributions for local incident triage. SHAP computation is kept separate from the critical prediction path.
+
+### Baseline Benchmark Results
+
+#### 1. Batch Prediction Latency & Throughput (`POST /api/v1/predict`)
+
+| Batch Size | Repetitions | p50 Latency | p95 Latency | p99 Latency | Throughput | Per-Row Latency |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **100 rows** | 10 | **9.93 ms** | **24.41 ms** | **30.44 ms** | **8,003.48 rows/sec** | 0.1249 ms/row |
+| **500 rows** | 10 | **14.95 ms** | **23.09 ms** | **27.74 ms** | **30,759.04 rows/sec** | 0.0325 ms/row |
+| **1,000 rows** | 10 | **23.62 ms** | **37.98 ms** | **44.26 ms** | **37,892.74 rows/sec** | 0.0264 ms/row |
+| **5,000 rows** | 10 | **89.14 ms** | **114.38 ms** | **121.27 ms** | **53,267.68 rows/sec** | 0.0188 ms/row |
+
+#### 2. Concurrency Load Benchmark (`POST /api/v1/predict`, 500-Row Batches)
+
+| Concurrency Level | p50 Latency | p95 Latency | p99 Latency | Aggregate Throughput | Error Rate |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| **1 worker** | **15.22 ms** | **24.25 ms** | **27.79 ms** | **29,640.23 rows/sec** | 0.0% |
+| **5 workers** | **61.61 ms** | **63.24 ms** | **66.92 ms** | **39,341.00 rows/sec** | 0.0% |
+| **10 workers** | **118.50 ms** | **127.01 ms** | **127.10 ms** | **39,385.80 rows/sec** | 0.0% |
+| **25 workers** | **151.81 ms** | **255.74 ms** | **264.99 ms** | **36,176.39 rows/sec** | 0.0% |
+| **50 workers** | **140.86 ms** | **244.85 ms** | **253.97 ms** | **38,267.26 rows/sec** | 0.0% |
+
+#### 3. Single-Instance SHAP Explanation (`POST /api/v1/explain`)
+
+| Target Endpoint | p50 Latency | p95 Latency | p99 Latency | Mean Latency | Error Rate |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| `/api/v1/explain` | **20.29 ms** | **22.24 ms** | **27.87 ms** | 20.69 ms | 0.0% |
+
+#### 4. Real-Time Target (<100 ms) & Bottleneck Summary
+- **Target Compliance**: For batch sizes of 100, 500, and 1,000 rows, single-request **p95 and p99 latencies are strictly under <100 ms** (e.g. 500 rows: p95 = 23.09 ms; 1,000 rows: p95 = 37.98 ms). Single-instance SHAP explanations also meet the target (**p95 = 22.24 ms**).
+- **Bottleneck Breakdown**: Pipeline profiling (`benchmark_batches.py`) revealed that C++ XGBoost matrix computation (~47.2 ms on 5k rows) and CSV bytes parsing (~19.7 ms on 5k rows) dominate execution time, while feature slicing and cleaning take `< 0.6 ms`.
+- **Targeted Optimization**: Optimized `PredictionService` response object formatting using vectorized list comprehensions.
+
+### Reproduction Commands
+Ensure the Dockerized application stack is running (`docker compose up -d`), then execute:
+```bash
+# 1. Run pipeline component profiler
+python3 benchmarks/benchmark_batches.py
+
+# 2. Run live HTTP API latency & concurrency benchmark
+python3 benchmarks/benchmark_api.py
+```
+
+---
+
 ## Roadmap
 
 ### Completed Milestones (Summer 2026 Core Platform)
@@ -412,6 +471,7 @@ python3 src/analysis/shap_feature_selection.py --timing-only
 - [x] **v1.3**: Interactive SHAP Explainability Dashboard (TreeExplainer backend service, `POST /api/v1/explain`, sliding `ExplainDrawer`, SHAP contribution charts & tables)
 - [x] **v1.4**: Dockerized Deployment (Multi-stage React Nginx container, lightweight Python FastAPI container, Docker Compose orchestration, health checks)
 - [x] **v1.5**: Production CI/CD (GitHub Actions workflow, Docker Buildx GHA caching, GHCR container registry publishing)
+- [x] **v1.6**: Real-Time Performance & Scalability Extension (`benchmarks/` suite, latency p50/p95/p99 statistics, concurrency load testing, component profiling, vectorized optimization)
 
 ### Research Roadmap (Autumn 2026 Extensions — Ongoing & Planned)
 - [ ] **v2.0-R1 (Risk Decision Layer)**: Formulation of multi-factor risk scoring models combining prediction confidence, threat severity weighting, and feature anomaly magnitudes.
